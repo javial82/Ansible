@@ -1,0 +1,63 @@
+# What I need:
+#   Apps:
+#     manually:
+#       vagrant
+
+---
+- name: Ansible file for testing purposes
+  hosts: ansible-client.com
+  vars_files:
+    - vars.yml
+  vars_prompt:
+    - name: "username"
+      prompt: "What's the username?"
+      private: no
+    - name: "password"
+      prompt: "Password"
+  tasks:
+    - name: Configure user  
+      user:
+        name: "{{ username }}"
+        password: "{{password}}"
+        groups: "sudo"
+    - name: Install apt apps
+      apt:
+        pkg: "{{ item }}"
+        state: latest
+      with_items: "{{ apt_soft }}"
+    - name: Install pip packets
+      pip:
+        name: "{{ item }}"
+        state: latest
+      with_items: "{{ pip_packets }}"
+    - name: Create debs folder
+      file:
+        path="{{ item }}"
+        state=directory
+        mode=0755
+      with_items: "{{ folders }}"
+    - name: Download debs
+      get_url: 
+        url="{{ item.value.url }}"
+        dest="/home/{{ username }}/debs/{{ item.value.name }}.deb"
+        validate_certs=no
+      with_dict: "{{ manual_packets }}"
+      when: item.value.type == "deb"
+    - name: Install debs
+      apt: 
+        deb: "/home/{{ username }}/debs/{{ item.value.name }}.deb"
+        state: present
+      become: true
+      with_dict: "{{ manual_packets }}"
+      when: item.value.type == "deb"
+    - name: Download zips
+      get_url: 
+        url="{{ item.value.url }}"
+        dest="/home/{{ username }}/{{ item.value.name }}.zip"
+        validate_certs=no
+      with_dict: "{{ manual_packets }}"
+      when: item.value.type == "zip"
+    - name: Unzip zips
+      command: /usr/bin/unzip "/home/{{ username }}/{{ item.value.name }}.zip" -d "/home/{{ username }}/"
+      with_dict: "{{ manual_packets }}"
+      when: item.value.type == "zip"
