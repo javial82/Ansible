@@ -13,6 +13,10 @@ pip_packets:
   - awscli
   - boto
 manual_packets:
+  vagrant:
+    type: "deb"
+    url: "https://releases.hashicorp.com/vagrant/1.8.5/vagrant_1.8.5_x86_64.deb"
+    name: "vagrant"
   chrome:
     type: "deb"
     url: "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"

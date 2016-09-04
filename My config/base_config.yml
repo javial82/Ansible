@@ -1,0 +1,110 @@
+---
+- name: Configure linux environment
+  hosts: ansible-client.com
+  vars_files:
+    - vars.yml
+  vars_prompt:
+    - name: "name"
+      prompt: "What's the complete name?"
+      private: no
+    - name: "email"
+      prompt: "What's the email?"
+      private: no
+    - name: "username"
+      prompt: "What's the username?"
+      private: no
+    - name: "password"
+      prompt: "Password"
+  tasks:
+    #User configuration
+    - name: Configure user  
+      user:
+        name: "{{ username }}"
+        password: "{{ password }}"
+        groups: "sudo"
+    - name: Copying some user files
+      copy:
+        src=files/{{ item }}
+        dest=/home/{{ username }}/.{{ item }}
+      with_items:
+        - bashrc
+        - bash_profile
+        - profile
+    - name: Configure gitconfig file
+      template:
+        src=templates/gitconfig.j2
+        dest=/home/{{ username }}/.gitconfig
+    #Apps installation with apt, pip and manually
+    - name: Install apt apps
+      apt:
+        pkg: "{{ item }}"
+        state: latest
+      with_items: "{{ apt_soft }}"
+    - name: Configure Git prompt
+      git:
+        dest: /home/{{ username }}/.bash-git-prompt
+        repo: https://github.com/magicmonty/bash-git-prompt.git
+    - name: Install pip packets
+      pip:
+        name: "{{ item }}"
+        state: latest
+      with_items: "{{ pip_packets }}"
+    - name: Create debs folder
+      file:
+        path="{{ item }}"
+        state=directory
+        mode=0755
+      with_items: "{{ folders }}"
+    - name: Download debs
+      get_url: 
+        url="{{ item.value.url }}"
+        dest="/home/{{ username }}/debs/{{ item.value.name }}.deb"
+        validate_certs=no
+      with_dict: "{{ manual_packets }}"
+      when: item.value.type == "deb"
+    - name: Install debs
+      apt: 
+        deb: "/home/{{ username }}/debs/{{ item.value.name }}.deb"
+        state: present
+      become: true
+      with_dict: "{{ manual_packets }}"
+      when: item.value.type == "deb"
+    - name: Download zips
+      get_url: 
+        url="{{ item.value.url }}"
+        dest="/home/{{ username }}/{{ item.value.name }}.zip"
+        validate_certs=no
+      with_dict: "{{ manual_packets }}"
+      when: item.value.type == "zip"
+    #If you want to check if a folder exists before unzipping it
+    #unccomment this lines
+    # - name: Check if app folder exists
+    #   stat:
+    #     path="/home/{{ username }}/{{ item.value.name }}"
+    #   with_dict: "{{ manual_packets }}"
+    #   register: folders
+    #   tags: test
+    - name: Unzip zips
+      command: /usr/bin/unzip -n "/home/{{ username }}/{{ item.value.name }}.zip" -d "/home/{{ username }}/"
+      with_dict: "{{ manual_packets }}"
+      when: item.value.type == "zip"
+    #   command: /usr/bin/unzip "/home/{{ username }}/{{ item.item.value.name }}.zip" -d "/home/{{ username }}/{{ item.item.value.name }}/"
+    #   with_items: "{{ folders.results }}"
+    #   when:
+    #     - item.item.value.type  == "zip"
+    #      - not item.stat.exists
+    #   tags: test
+    # - name: Cleaning files and folders
+    #   command: /bin/rm -rf /home/{{ username }}/{{ item.value.name }}.zip
+    #   with_dict: "{{ manual_packets }}"
+    #   when: item.value.type == "zip"
+
+
+
+
+
+
+
+
+
+
