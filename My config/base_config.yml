@@ -1,6 +1,9 @@
+#Add tar.gz support with pycharm
+#
 ---
-- name: Configure linux environment
-  hosts: ansible-client.com
+- name: Configure workspace on Ubuntu linux
+  hosts: localhost
+  connection: local
   vars_files:
     - vars.yml
   vars_prompt:
@@ -76,6 +79,17 @@
         validate_certs=no
       with_dict: "{{ manual_packets }}"
       when: item.value.type == "zip"
+    - name: Unzip zips
+      command: /usr/bin/unzip -n "/home/{{ username }}/{{ item.value.name }}.zip" -d "/home/{{ username }}/"
+      with_dict: "{{ manual_packets }}"
+      when: item.value.type == "zip"
+    - name: Download tar.gz
+      get_url: 
+        url="{{ item.value.url }}"
+        dest="/home/{{ username }}/{{ item.value.name }}.tar.gz"
+        validate_certs=no
+      with_dict: "{{ manual_packets }}"
+      when: item.value.type == "targz"
     #If you want to check if a folder exists before unzipping it
     #unccomment this lines
     # - name: Check if app folder exists
@@ -84,16 +98,19 @@
     #   with_dict: "{{ manual_packets }}"
     #   register: folders
     #   tags: test
-    - name: Unzip zips
-      command: /usr/bin/unzip -n "/home/{{ username }}/{{ item.value.name }}.zip" -d "/home/{{ username }}/"
+    - name: Untar
+      unarchive:
+        src: /home/{{ username }}/{{ item.value.name }}.tar.gz
+        dest: /home/{{ username }}/
       with_dict: "{{ manual_packets }}"
-      when: item.value.type == "zip"
+      when: item.value.type == "targz"
     #   command: /usr/bin/unzip "/home/{{ username }}/{{ item.item.value.name }}.zip" -d "/home/{{ username }}/{{ item.item.value.name }}/"
     #   with_items: "{{ folders.results }}"
     #   when:
     #     - item.item.value.type  == "zip"
     #      - not item.stat.exists
     #   tags: test
+
     # - name: Cleaning files and folders
     #   command: /bin/rm -rf /home/{{ username }}/{{ item.value.name }}.zip
     #   with_dict: "{{ manual_packets }}"
