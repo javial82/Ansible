@@ -17,32 +17,38 @@ manual_packets:
     type: "deb"
     url: "https://releases.hashicorp.com/vagrant/1.8.5/vagrant_1.8.5_x86_64.deb"
     name: "vagrant"
+    ext: "deb"
   chrome:
     type: "deb"
     url: "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
     name: "chrome"
+    ext: "deb"
   opera:
     type: "deb"
     url: "http://download2.operacdn.com/pub/opera/desktop/39.0.2256.48/linux/opera-stable_39.0.2256.48_i386.deb"
     name: "opera"
+    ext: "deb"
   geppetto:
     type: "zip"
     url: "https://downloads.puppetlabs.com/geppetto/4.x/geppetto-linux.gtk.x86_64-4.3.1-R201501182354.zip"
     name: "geppetto"
+    ext: "zip"
   aptana:
     type: "zip"
     url: "https://github.com/aptana/studio3/releases/download/v3.6.1/Aptana_Studio_3_Setup_Linux_x86_64_3.6.1.zip"
     name: "aptana"
+    ext: "zip"
   oracle_vbox:
     type: "deb"
     url: "http://download.virtualbox.org/virtualbox/5.1.4/virtualbox-5.1_5.1.4-110228~Ubuntu~trusty_amd64.deb"
     name: "vbox"
+    ext: "deb"
   pycharm:
     type: "targz"
     url: "http://download-cf.jetbrains.com/python/pycharm-community-2016.2.2.tar.gz"
     name: pycharm
+    ext: "tar.gz"
 
 #Folders needed
 folders:
-  - "/home/{{ username }}/debs"
   - "/home/{{ username }}/Vagrant"
